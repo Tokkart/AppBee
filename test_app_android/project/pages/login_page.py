@@ -5,10 +5,10 @@ from pages.base_app import BaseApp
 class LoginPage(BaseApp):
     def login(self, phone, password):
         # self.wait_for_element(By.ID, 'com.android.permissioncontroller:id/permission_deny_button').click()
-        self.popap_premission = self.wait_for_element(By.ID, 'com.android.permissioncontroller:id/permission_deny_button')
-        if self.popap_premission.is_displayed:
-            self.popap_premission.click()
-        self.find_element(By.XPATH, "//android.widget.TextView[@text='войти']").click()
+        # self.popap_premission = self.find_element(By.ID, 'com.android.permissioncontroller:id/permission_deny_button')
+        # if self.popap_premission.is_displayed:
+        #     self.popap_premission.click()
+        self.wait_for_element(By.XPATH, "//android.widget.TextView[@text='войти']").click()
         self.wait_for_element(By.XPATH, "//android.widget.TextView[@text='или по логину и паролю']").click()
         self.find_element(By.XPATH, "//android.widget.EditText[@text='+7']").click()
         self.find_element(By.XPATH, "//android.widget.EditText[@text='+7']").send_keys(phone)
