@@ -6,7 +6,9 @@ def setup_driver():
         platformName='Android',
         automationName='uiautomator2',
         deviceName='Android',
-        appPackage='ru.beeline.services.staging',
+        appPackage='ru.beeline.services',
+        #ru.beeline.services - прод
+        #ru.beeline.services.staging - тест
         appActivity='ru.beeline.activity.MainActivity',
         language='ru',
         locale='RU',

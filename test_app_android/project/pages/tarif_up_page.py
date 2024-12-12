@@ -45,7 +45,7 @@ class TarifUpPage(BaseApp):
 
         self.find_element(By.XPATH, '//android.widget.TextView[@text="Продолжить"]').click()
     def button_ap(self):    #АП на кнопке далее
-        ap = self.find_element(AppiumBy.ACCESSIBILITY_ID, '590 рублей/мес')
+        ap = self.find_element(AppiumBy.ACCESSIBILITY_ID, '\d+ рублей/мес')
         return ap.get_attribute('text')
 
     def dtm_select(self, name_dtm):  # Выбор ДТМ опции
@@ -59,9 +59,6 @@ class TarifUpPage(BaseApp):
 
             # Найти родительский элемент
             parent_element = self.find_parent_element_by_child(child_element)
-
-            # Найти элементы с условиями
-            children_with_conditions = self.find_toggl_with_conditions(parent_element)
 
             #Проверка сколько находит элементов -> нужна для отладки
             # if len(children_with_conditions) > 1:

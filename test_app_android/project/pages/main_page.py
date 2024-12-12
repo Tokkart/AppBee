@@ -1,6 +1,7 @@
 from selenium.webdriver.common.by import By
 from pages.base_app import BaseApp
 
+
 # Стартовая страница main_page.py
 class MainPage(BaseApp):
     def main_myprodact(self):   #Переход в мои продукты
