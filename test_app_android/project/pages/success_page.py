@@ -1,5 +1,5 @@
 from selenium.webdriver.common.by import By
-from pages.base_app import BaseApp
+from beeline.AppBee.AppBee.test_app_android.project.pages.base_app import BaseApp
 from appium.webdriver.common.appiumby import AppiumBy
 
 # Стартовая страница main_page.py

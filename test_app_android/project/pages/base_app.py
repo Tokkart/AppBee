@@ -1,10 +1,10 @@
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException
-from selenium.webdriver.common.action_chains import ActionChains
-from appium.webdriver.common.appiumby import AppiumBy
 import locale
 from datetime import datetime, timedelta
+from appium.webdriver.common.appiumby import AppiumBy
+from selenium.webdriver.common.action_chains import ActionChains
 
 class BaseApp:
     """Базовый класс для работы с мобильным приложением."""
@@ -17,7 +17,7 @@ class BaseApp:
             return self.driver.find_element(locator_type, locator)
         except Exception as e:
             # Обработка исключения, если элемент не найден
-            # print(f"Ошибка: Элемент с локатором ({locator_type}, {locator}) не найден. Детали: {e}")
+            print(f"Ошибка: Элемент с локатором ({locator_type}, {locator}) не найден. Детали: {e}")
             return None
     # Поиск элементов
     def find_elements(self, locator_type, locator):
@@ -26,18 +26,16 @@ class BaseApp:
             return self.driver.find_elements(locator_type, locator)
         except Exception as e:
             # Обработка исключения, если элемент не найден
-            # print(f"Ошибка: Элемент с локатором ({locator_type}, {locator}) не найден. Детали: {e}")
+            print(f"Ошибка: Элемент с локатором ({locator_type}, {locator}) не найден. Детали: {e}")
             return None
     # Поиск элемента с ожиданием
     def wait_for_element(self, locator_type, locator, timeout=10):
         try:
-            # Попытка найти элемент
             return WebDriverWait(self.driver, timeout).until(
                 EC.presence_of_element_located((locator_type, locator))
             )
         except Exception as e:
-            # Обработка исключения, если элемент не найден
-            # print(f"Ошибка: Элемент с локатором ({locator_type}, {locator}) не найден. Детали: {e}")
+            print(f"Элемент с локатором {locator} не найден. Детали: {e}")
             return None
     # Свайп по координатам
     def swipe(self, start_x, start_y, end_x, end_y):
@@ -109,7 +107,7 @@ class BaseApp:
         child_bounds = self.parse_bounds(child_bounds_str)
 
         # Найти все элементы с атрибутом bounds
-        all_elements = self.find_elements(AppiumBy.XPATH, '//*[@bounds]')
+        all_elements = self.driver.find_elements(AppiumBy.XPATH, '//*[@bounds]')
         parent_element = None
 
         for element in all_elements:
@@ -167,10 +165,10 @@ class BaseApp:
         return x1d > x1p and y1d > y1p and x2d < x2p and y2d < y2p
 
     # Поиск дочернего элемента, который отображает АП
-    def find_ap_dtm_with_conditions(self, parent_element):
+    def find_element_with_conditions(self, parent_element, text_part):
         """
         Найти дочерние элементы с текстом '₽/мес'.
-        :param driver: Appium WebDriver
+        :param text_part:
         :param parent_element: WebElement родительского элемента
         :return: Список WebElement, удовлетворяющих условиям
         """
@@ -188,17 +186,19 @@ class BaseApp:
             bounds = self.parse_bounds(bounds_str)
 
             # Условие: текст содержит '₽/мес'
-            if text and "₽/мес" in text and self.is_inside_bounds(bounds, parent_bounds):
+            if text_part in text and self.is_inside_bounds(bounds, parent_bounds):
                 filtered_elements.append(child)
-
-        return filtered_elements
+        if filtered_elements:
+            return filtered_elements
+        else:
+            return None
 
     def scroll_down(self):
         # Пример реализации прокрутки вниз
         window_size = self.driver.get_window_size()
         start_x = window_size['width'] / 2
-        start_y = window_size['height'] * 0.7
-        end_y = window_size['height'] * 0.4
+        start_y = window_size['height'] * 0.8
+        end_y = window_size['height'] * 0.2
 
         self.driver.swipe(start_x, start_y, start_x, end_y, 800)  # Прокрутка вниз
 
@@ -213,11 +213,14 @@ class BaseApp:
 
     def extract_y_from_bounds(self, bounds):
         # Извлекаем координату Y из bounds (например, [x1,y1][x2,y2])
-        coordinates = bounds.split("][")
-        y1 = int(coordinates[0].split(",")[1].replace("[", ""))
-        y2 = int(coordinates[1].split(",")[1].replace("]", ""))
-        return (y1 + y2) / 2  # Среднее значение Y для более точного сравнения
-
+        if bounds:
+            coordinates = bounds.split("][")
+            y1 = int(coordinates[0].split(",")[1].replace("[", ""))
+            y2 = int(coordinates[1].split(",")[1].replace("]", ""))
+            return (y1 + y2) / 2  # Среднее значение Y для более точного сравнения
+        else:
+            print('Координаты не переданы')
+            return None
     def swipe_right(self, gb_y):
         # Пример свайпа вправо по координатам Y
         window_size = self.driver.get_window_size()
@@ -237,22 +240,25 @@ class BaseApp:
         self.driver.swipe(start_x, start_y, end_x, end_y, 800)
 
     def get_element_by_text(self, text):
-        try:
-            return self.driver.find_element(AppiumBy.ANDROID_UIAUTOMATOR, f'new UiSelector().text("{text}")')
-
-        except Exception as e:
-            return None
+        element_text = self.find_element(AppiumBy.ANDROID_UIAUTOMATOR, f'new UiSelector().text("{text}")')
+        if element_text:
+            return element_text
+        else:
+            print(f'Элемент "{text}" не найден.')
+        return None
     def get_element_by_prefixes(self, text):
         try:
-            return self.driver.find_element(AppiumBy.ANDROID_UIAUTOMATOR, f'new UiSelector().textStartsWith("{text}")')
+            return self.find_element(AppiumBy.ANDROID_UIAUTOMATOR, f'new UiSelector().textStartsWith("{text}")')
 
         except Exception as e:
             return None
 
     def get_element_y_coordinate(self, element): #Поиск элементов находящихся на одном уровне по оси X
-        bounds = element.get_attribute("bounds")
-        return self.extract_y_from_bounds(bounds)
-
+        try:
+            bounds = element.get_attribute("bounds")
+            return bounds
+        except AttributeError:
+            return None
     def find_number_to_click(self, gb_y, value_gb):
         # Находим все элементы с текстом, которые являются числами
         numbers = self.driver.find_elements(
@@ -262,18 +268,16 @@ class BaseApp:
 
         # Ищем нужное число (например, "100")
         for num in numbers:
-            num_text = num.get_attribute("text")
-            num_bounds = num.get_attribute("bounds")
+            num_text = num.text
+            num_bounds = num.get_attribute('bounds')
             num_y = self.extract_y_from_bounds(num_bounds)
-
             # Проверяем, находится ли элементы с ГБ на одном уровне по Y
-            if gb_y == num_y:
+            if abs(gb_y - num_y) < 40:
                 if num_text == value_gb:
                     print(f"Найден элемент с текстом: {num_text}")
                     return num  # Возвращаем найденный элемент для клика
-
-        return None  # Если число не найдено
-    def find_number(self, number):
+        return None# Если число не найдено
+    def find_number(self, element, text_part):
         # Находим все элементы с текстом, которые являются числами
         numbers = self.driver.find_elements(
             AppiumBy.ANDROID_UIAUTOMATOR,
@@ -285,10 +289,10 @@ class BaseApp:
             num_text = num.get_attribute("text")
             num_bounds = num.get_attribute("bounds")
             num_y = self.extract_y_from_bounds(num_bounds)
-
+            element_y = self.extract_y_from_bounds(element)
 
             # Проверяем, находится ли элементы с ГБ на одном уровне по Y
-            if (abs(number - num_y) < 40) and "₽" in num_text:
+            if (abs(element_y - num_y) < 40) and text_part in num_text:
                return num  # Возвращаем найденный элемент для клика
 
         return None  # Если число не найдено
@@ -349,36 +353,38 @@ class BaseApp:
 
     def find_text_with_prefixes(self, prefixes):
         for prefix in prefixes:
-
-            # Поиск элемента, текст которого начинается с текущего префикса
+            # Поиск элемента с префиксом
             element = self.get_element_by_prefixes(prefix)
             if element is None:
-                # Если элемент не найден, переходим к следующему в списке
-                continue  # Переход к следующему элементу в списке
+                # Если элемент не найден для текущего префикса
+                print(f"Элемент с префиксом '{prefix}' не найден.")
+                continue  # Переход к следующему префиксу
+            # Возврат найденного элемента
+            print(f"Найден элемент с префиксом '{prefix}'")
             return element
+            # Если ни один элемент не найден, возвращаем None
+        print("Элемент с указанными префиксами не найден.")
+        return None
+    def check_name_price(self, name, price, text_part):  # Поиск стоимости cправа от нужного элемента
+        # Получаем элемент с заданным текстом
+        parent = self.get_element_by_text(name)
+        element = self.get_element_y_coordinate(parent)
 
-        return None  # Если ни один префикс не подошел
+        # Ищем стоимость ДТМ
+        price_element = self.find_number(element, text_part).text
+        price_element = price_element.replace(text_part, "").replace(" ", "")
 
-    def check_name_price(self, name):  # Поиск стоимости дтм в чеке
-        try:
-            # Получаем элемент с заданным текстом
-            gb_element = self.get_element_by_text(name)
-            price = self.get_element_y_coordinate(gb_element)
 
-            # Ищем стоимость ДТМ
-            price_element = self.find_number(price)
-
-            if price_element is not None:
-                dtm_price = price_element.get_attribute('text')
-                return dtm_price
-            else:
-                # Если элемент со стоимостью не найден
-                print(f"Найден элемент '{name}', но стоимость не найдена.")
-                return None
-        except Exception as e:
-            print(f"Ошибка при обработке элемента '{name}': {e}")
+        if price_element == price:
+            print(f'АП корректна: {price_element}.')
+            return price_element
+        elif price_element != price:
+            print(f'АП не найдена.')
+            return price_element
+        else:
+            # Если элемент со стоимостью не найден
+            print('АП не найдена.')
             return None
-
     # def check_mobile_price(self, value_gb):  # Поиск стоимости ДТМ в чеке
     #     try:
     #         # Пытаемся найти элемент с заданным текстом
@@ -401,35 +407,35 @@ class BaseApp:
     #         print(f"Ошибка при обработке элемента '{value_gb}': {e}")
     #         return None
 
-    def check_mobilprice(self):  # Поиск стоимости за мобильную связь
-        value_gb_list = ["Увеличение пакета ГБ", "Увеличение пакета минут", "Увеличение пакета ГБ и минут"]
-        found_price = False  # Флаг для отслеживания найденной стоимости
-
-        for value_gb in value_gb_list:
-            # Пытаемся найти элемент
-            gb_element = self.get_element_by_text(value_gb)
-
-            if gb_element is None:
-                # Если элемент не найден, переходим к следующему в списке
-                continue  # Переход к следующему элементу в списке
-
-            # Если элемент найден, продолжаем искать стоимость
-            gb_y = self.get_element_y_coordinate(gb_element)
-            mobil_price = self.find_number(gb_y)
-
-            if mobil_price:
-                # Если стоимость найдена, выводим информацию и устанавливаем флаг
-                print(f"Проверяем стоимость у '{value_gb}', стоимость: {mobil_price.get_attribute('text')}")
-                found_price = True
-                return mobil_price
-            else:
-                # Если стоимость не найдена, записываем в лог, но не выводим в консоль
-               print(f"Проверяем стоимость у '{value_gb}', стоимость отсутствует.")
-
-        # Если ничего не найдено
-        if not found_price:
-            print("Стоимость за мобильную связь не найдена.")
-        return None
+    # def check_mobilprice(self):  # Поиск стоимости за мобильную связь
+    #     value_gb_list = ["Увеличение пакета ГБ", "Увеличение пакета минут", "Увеличение пакета ГБ и минут"]
+    #     found_price = False  # Флаг для отслеживания найденной стоимости
+    #
+    #     for value_gb in value_gb_list:
+    #         # Пытаемся найти элемент
+    #         gb_element = self.get_element_by_text(value_gb)
+    #
+    #         if gb_element is None:
+    #             # Если элемент не найден, переходим к следующему в списке
+    #             continue  # Переход к следующему элементу в списке
+    #
+    #         # Если элемент найден, продолжаем искать стоимость
+    #         gb_y = self.get_element_y_coordinate(gb_element)
+    #         mobil_price = self.find_number(gb_y)
+    #
+    #         if mobil_price:
+    #             # Если стоимость найдена, выводим информацию и устанавливаем флаг
+    #             print(f"Проверяем стоимость у '{value_gb}', стоимость: {mobil_price.get_attribute('text')}")
+    #             found_price = True
+    #             return mobil_price
+    #         else:
+    #             # Если стоимость не найдена, записываем в лог, но не выводим в консоль
+    #            print(f"Проверяем стоимость у '{value_gb}', стоимость отсутствует.")
+    #
+    #     # Если ничего не найдено
+    #     if not found_price:
+    #         print("Стоимость за мобильную связь не найдена.")
+    #     return None
 
     def check_info(self):
         info_button = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, 'info')
@@ -465,8 +471,8 @@ class BaseApp:
             # Например, сделать скриншот или завершить текущий шаг
             self.driver.save_screenshot("element_not_found.png")
     def find_number_element(self, text, name, text_part): #Поиск значения нужного элемента
-        ap_tru = self.find_element(AppiumBy.ANDROID_UIAUTOMATOR,f'new UiSelector().text("{text}")')
-        ap_false = self.find_element(AppiumBy.ANDROID_UIAUTOMATOR,f'new UiSelector().textContains("{text_part}")')
+        ap_tru = self.driver.find_element(AppiumBy.ANDROID_UIAUTOMATOR,f'new UiSelector().text("{text}")')
+        ap_false = self.driver.find_element(AppiumBy.ANDROID_UIAUTOMATOR,f'new UiSelector().textContains("{text_part}")')
         if ap_tru:
             print(f'Проверка {name} ->\n успешно: {ap_tru.text}')
         elif ap_false:
@@ -500,3 +506,32 @@ class BaseApp:
         # Форматирование итоговой строки
         data_future_30d = f"{future_date.strftime('%d')} {month_genitive}"
         return data_future_30d
+    def find_element_with_swipe(self, value, name):  #Поиск и выбор элемента при помощи свайпа в карусели (ГБ/МИН)
+        gb_element = self.get_element_by_text(name)
+        gb_bounds = self.get_element_y_coordinate(gb_element)
+        gb_y = self.extract_y_from_bounds(gb_bounds)
+
+        # Поиск нужного числа и клик по нему
+        number_to_click = self.find_number_to_click(gb_y, value)
+
+        # Если число найдено, кликнуть по нему
+        if number_to_click:
+            number_to_click.click()
+            print(f"Кликнуто по элементу {value} {name}.")
+        else:
+            # Если нужного числа нет, выполните свайп
+            print(f"{value} {name} не найдены. Выполняется свайп...")
+            self.swipe_to_find_number(gb_y, value)
+            # Повторяем поиск после свайпа
+            self.repeat_search_for_number(gb_y, value)
+    def child_element_ap(self, name, text_part):  # АП ДТМ опции
+        # Найти дочерний элемент
+        child_element = self.find_element(AppiumBy.ANDROID_UIAUTOMATOR, f'new UiSelector().text("{name}")')
+        # Найти родительский элемент
+        parent_element = self.find_parent_element_by_child(child_element)
+        children_with_conditions = self.find_element_with_conditions(parent_element, text_part)
+        for child in children_with_conditions:
+            if child:
+                return child.text
+            else:
+                return None

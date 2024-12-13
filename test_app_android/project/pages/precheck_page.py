@@ -1,9 +1,17 @@
 from selenium.webdriver.common.by import By
-from pages.base_app import BaseApp
-
+from beeline.AppBee.AppBee.test_app_android.project.pages.base_app import BaseApp
+from appium.webdriver.common.appiumby import AppiumBy
 
 # Стартовая страница main_page.py
 class PreCheckPage(BaseApp):
+    def wait_page_precheck(self):
+        name = "Проверим, что меняется"
+        precheck = self.wait_for_element(AppiumBy.ANDROID_UIAUTOMATOR, f'new UiSelector().text("{name}")')
+        if precheck:
+            print(f'"{name}" страница найдена.')
+        else:
+            print(f'"{name}" страница не найдена.')
+
     def delete_dtm(self):   #Проверка отключаемых услуг
         prefixes = ["При изменении тарифа"]
         element = self.find_text_with_prefixes(prefixes)
@@ -35,6 +43,9 @@ class Precheck:
     def __init__(self, driver):
         self.driver = driver
         self.precheck = PreCheckPage(driver)
+#Ожидание предчека
+    def wait_page_precheck(self):
+        self.precheck.wait_page_precheck()
 #Текст с отключаемыми услугами
     def dtm_delete(self):
         self.precheck.delete_dtm()

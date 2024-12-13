@@ -1,19 +1,25 @@
-from selenium.webdriver.common.by import By
-from pages.base_app import BaseApp
-
+from appium.webdriver.common.appiumby import AppiumBy
+from beeline.AppBee.AppBee.test_app_android.project.pages.base_app import BaseApp
 
 # Стартовая страница main_page.py
 class MainPage(BaseApp):
-    def main_myprodact(self):   #Переход в мои продукты
+    def go_my_product(self):   #Переход в мои продукты
         #Переход в мои продукты -> клик по иконке развернуть
-        self.wait_for_element(By.XPATH, "(//android.widget.FrameLayout[@resource-id=\'ru.beeline.services.staging:id/bottom_bar_fragment_container'])[2]/androidx.compose.ui.platform.ComposeView/android.view.View/android.widget.ScrollView/android.view.View[2]/android.widget.ScrollView/android.view.View[1]/android.view.View[2]", 10).click()
-
-
+        profile = self.wait_for_element(AppiumBy.ACCESSIBILITY_ID, 'Профиль')
+        if profile:
+            print('Профиль найден')
+        else:
+            print('Профиль не найден')
+        go_my_product = self.find_element(AppiumBy.ANDROID_UIAUTOMATOR, 'new UiSelector().className("android.view.View").instance(23)')
+        if go_my_product:
+            go_my_product.click()
+        else:
+            print('Кнопка для перехода в "Мои продукты" не найдена')
 #Класс стартовой страницы
 class Main:
     def __init__(self, driver):
         self.driver = driver
-        self.main_go_myprodact = MainPage(driver)
-#переходом из стартовой страницы в мои продукты
-    def go_myprodact(self):
-        self.main_go_myprodact.main_myprodact()
+        self.page_main = MainPage(driver)
+#Переходом из стартовой страницы в мои продукты
+    def go_my_product(self):
+        self.page_main.go_my_product()

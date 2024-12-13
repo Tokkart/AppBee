@@ -1,13 +1,10 @@
 from selenium.webdriver.common.by import By
-from pages.base_app import BaseApp
+from beeline.AppBee.AppBee.test_app_android.project.pages.base_app import BaseApp
 
 # Класс c шагами авторизации в МП
 class LoginPage(BaseApp):
     def login(self, phone, password):
-        # self.wait_for_element(By.ID, 'com.android.permissioncontroller:id/permission_deny_button').click()
-        # self.popap_premission = self.find_element(By.ID, 'com.android.permissioncontroller:id/permission_deny_button')
-        # if self.popap_premission.is_displayed:
-        #     self.popap_premission.click()
+
         self.wait_for_element(By.XPATH, "//android.widget.TextView[@text='войти']").click()
         self.wait_for_element(By.XPATH, "//android.widget.TextView[@text='или по логину и паролю']").click()
         self.find_element(By.XPATH, "//android.widget.EditText[@text='+7']").click()

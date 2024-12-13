@@ -1,5 +1,6 @@
 from appium import webdriver
 from appium.options.android import UiAutomator2Options
+from appium import webdriver
 
 def setup_driver():
     capabilities = dict(

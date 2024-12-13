@@ -1,5 +1,5 @@
 from selenium.webdriver.common.by import By
-from pages.base_app import BaseApp
+from beeline.AppBee.AppBee.test_app_android.project.pages.base_app import BaseApp
 from appium.webdriver.common.appiumby import AppiumBy
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException
@@ -11,6 +11,7 @@ from datetime import datetime, timedelta
 
 # Мои продукты
 class MyProductsPage(BaseApp):
+
     def go_main(self):   #Переход на стартовую страницу
         #Переход на стартовую страницу -> клик по иконке свернуть
         self.wait_for_element(By.XPATH, "(//android.widget.FrameLayout[@resource-id='ru.beeline.services.staging:id/bottom_bar_fragment_container'])[2]/androidx.compose.ui.platform.ComposeView/android.view.View/android.view.View", 10).click()
@@ -41,11 +42,11 @@ class MyProductsPage(BaseApp):
         name = "Дата"
         self.find_number_element(text, name, text_part)
     def go_setting(self):  # Переход в карточку тарифа
-        # Переход в картоку тарифа -> клик по настройки тарифа
-        self.wait_for_element(By.XPATH,'//android.widget.TextView[@text="настройки тарифа"]',10).click()
+        # Переход в карточку тарифа -> клик по настройки тарифа
+        self.wait_for_element(AppiumBy.ANDROID_UIAUTOMATOR, 'new UiSelector().text("настройки тарифа")').click()
     def go_change_tariff(self):  # Смена тарифа
         # Смена тарифа -> клик по сменить тариф
-        self.wait_for_element(By.XPATH,'//android.widget.TextView[@text="сменить тариф"]',10).click()
+        self.wait_for_element(By.XPATH,'//android.widget.TextView[@text="сменить тариф"]').click()
 
 #Класс моих продуктов
 class MyProducts:
@@ -54,13 +55,13 @@ class MyProducts:
         self.my_products = MyProductsPage(driver)
 #Переход на стартовую страницу
     def go_main(self):
-        self.my_products.myprodact_main()
+        self.my_products.go_main()
 #Переход в смену тарифа
     def go_change_tariff(self):
-        self.my_products.myprodact_changetarif()
+        self.my_products.go_change_tariff()
 #Переходом в настройки тарифа
     def go_settings(self):
-        self.my_products.myprodact_setting()
+        self.my_products.go_setting()
 #Проверяем АП
     def ap(self, number):
         self.my_products.ap(number)
