@@ -1,4 +1,3 @@
-from appium import webdriver
 from appium.options.android import UiAutomator2Options
 from appium import webdriver
 
@@ -8,8 +7,8 @@ def setup_driver():
         automationName='uiautomator2',
         deviceName='Android',
         appPackage='ru.beeline.services',
-        #ru.beeline.services - прод
-        #ru.beeline.services.staging - тест
+            #ru.beeline.services - прод
+            #ru.beeline.services.staging - тест
         appActivity='ru.beeline.activity.MainActivity',
         language='ru',
         locale='RU',

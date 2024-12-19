@@ -1,5 +1,5 @@
 from selenium.webdriver.common.by import By
-from beeline.AppBee.AppBee.test_app_android.project.pages.base_app import BaseApp
+from test_app_android.project.pages.base_app import BaseApp
 
 # Класс c шагами авторизации в МП
 class LoginPage(BaseApp):
@@ -13,7 +13,7 @@ class LoginPage(BaseApp):
         self.find_element(By.XPATH, "//android.widget.TextView[@text='войти']").click()
 
 #Класс с тестами авторизации в МП
-class TestLoginApp:
+class LoginApp:
     def __init__(self, driver):
         self.driver = driver
         self.login_page = LoginPage(driver)

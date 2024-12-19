@@ -1,11 +1,14 @@
 from selenium.webdriver.common.by import By
-from beeline.AppBee.AppBee.test_app_android.project.pages.base_app import BaseApp
+from test_app_android.project.pages.base_app import BaseApp
 from appium.webdriver.common.appiumby import AppiumBy
+import allure
 
+@allure.feature('Тестирование тарифа UP')
+@allure.title('Страница успеха')
 # Стартовая страница main_page.py
 class SuccessPage(BaseApp):
     def page_text(self):
-        self.wait_for_element( AppiumBy.ANDROID_UIAUTOMATOR, 'new UiSelector().className("android.widget.TextView")', 20)
+        self.wait_for_element(AppiumBy.ANDROID_UIAUTOMATOR, f'new UiSelector().text("понятно")')
         heading_success_page = self.get_element_by_text("Всё получилось")
         text_success_page = self.get_element_by_text("Изменения вступят в силу в течение 10 минут. \nМы пришлём SMS с деталями")
         if heading_success_page and text_success_page:
@@ -20,8 +23,9 @@ class SuccessPage(BaseApp):
             # Получить первые два элемента и вывести их текст
             for element in elements[:2]:
                 print(element.text)
-    def button_understand(self):
-        self.button_understand_click()
+    def button_understand_click(self):
+        name = "понятно"
+        self.button_click(name)
 
 #Класс Экран успеха
 class Success:
@@ -32,5 +36,5 @@ class Success:
     def page_text(self):
         self.success_page.page_text()
 #Клик по кнопке продолжить
-    def button_understand(self):
-        self.success_page.button_understand()
+    def button_understand_click(self):
+        self.success_page.button_understand_click()

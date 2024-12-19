@@ -1,7 +1,10 @@
 from selenium.webdriver.common.by import By
-from beeline.AppBee.AppBee.test_app_android.project.pages.base_app import BaseApp
+from test_app_android.project.pages.base_app import BaseApp
 from appium.webdriver.common.appiumby import AppiumBy
+import allure
 
+@allure.feature('Тестирование тарифа UP')
+@allure.title('Страница предчека')
 # Стартовая страница main_page.py
 class PreCheckPage(BaseApp):
     def wait_page_precheck(self):
@@ -11,7 +14,10 @@ class PreCheckPage(BaseApp):
             print(f'"{name}" страница найдена.')
         else:
             print(f'"{name}" страница не найдена.')
-
+        # делаем скриншот
+        screenshot = self.driver.get_screenshot_as_png()
+        # добавляем скриншот в Allure
+        allure.attach(screenshot, "screenshot", allure.attachment_type.PNG)
     def delete_dtm(self):   #Проверка отключаемых услуг
         prefixes = ["При изменении тарифа"]
         element = self.find_text_with_prefixes(prefixes)
@@ -21,8 +27,6 @@ class PreCheckPage(BaseApp):
             return delete_dtm_text
         else:
             print("Текст про отключение услуг не найден.")
-
-
     def changing_tariff(self):   #Проверка отключаемых услуг
         prefixes = ["Остаток", "Сейчас"]
         element = self.find_text_with_prefixes(prefixes)
@@ -32,11 +36,12 @@ class PreCheckPage(BaseApp):
             return changing_tariff_text
         else:
             print("Текст про изменение тарифа не найден.")
-
-
     def button_next(self):
         next_button = self.wait_for_element(By.XPATH, '//android.widget.ScrollView/android.view.View[2]/android.widget.Button')
-        next_button.click()
+        if next_button:
+            next_button.click()
+        else:
+            print('Кнопка "далее" не найдена')
 
 #Класс предчека
 class Precheck:
