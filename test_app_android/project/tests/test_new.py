@@ -1,200 +1,263 @@
-# from test_app_android.project.pages.login_page import LoginApp
-# from test_app_android.project.utils.driver_setup import setup_driver
-# from test_app_android.project.pages.main_page import Main
-# from test_app_android.project.pages.myproducts_page import MyProducts
-# from test_app_android.project.pages.tariff_up_page import TariffUp
-# from test_app_android.project.pages.precheck_page import Precheck
-# from test_app_android.project.pages.check_page import Check
-# from test_app_android.project.pages.success_page import SuccessPage
-# from test_app_android.project.pages.base_app import BaseApp
-# import pytest
-# import openpyxl
-# import pandas as pd
-# import allure
-#
-# # Фикстура для драйвера
-# @pytest.fixture(scope="function")
-# def driver(request):
-#     driver = setup_driver()
-#     def fin():
-#         driver.quit()
-#     request.addfinalizer(fin)
-#     return driver
-#
-#
-# # Новая фикстура для получения данных из Excel
-# @pytest.fixture(scope="session")
-# def file_data():
-#     file_path = r'C:\Users\verli\Downloads\data test.xlsx'
-#     return parse_test_data(file_path)
-#
-# def parse_test_data(file_path):
-#     """
-#     Функция для чтения и фильтрации данных из Excel-файла.
-#     Возвращает список словарей, где каждая строка представляет тестовый набор данных.
-#     """
-#     # Читаем данные
-#     data = pd.ExcelFile(file_path)
-#     sheet_data = data.parse('Global')
-#
-#     # Удаляем строки с пустыми сценариями
-#     filtered_data = sheet_data.dropna(subset=['Сценарий'])
-#
-#     # Преобразуем строки в список словарей
-#     test_data = filtered_data.to_dict(orient='records')
-#
-#     return test_data
-#
-# def execute_scenario(driver, test_data_row):
-#     """
-#     Выполняет тестовый сценарий на основе данных из одной строки.
-#     """
-#     scenario = test_data_row.get('Сценарий')
-#
-#     # Маппинг сценариев на методы тестов
-#     scenario_mapping = {
-#         'СменаТп': change_tariff,
-#         'СменаПр': change_plan,
-#     }
-#
-#     # Выполнение соответствующего метода
-#     test_method = scenario_mapping.get(scenario)
-#     if test_method:
-#         test_method(driver, test_data_row)
-#     else:
-#         print(f"Сценарий '{scenario}' не поддерживается.")
-#
-#
-# def change_tariff(data):
-#     """Пример реализации теста для смены тарифа."""
-#     print(f"Выполняется смена тарифа для номера {data.get('Номер')}.")
-#
-# @allure.feature('Тестирование тарифа UP')
-# @allure.story('Смена пресета')
-# def change_plan(driver, data):
-#     """Пример реализации теста для смены плана."""
-#     print(f"Выполняется смена пресета для номера {data.get('Номер')}.")
-#     page_main = Main(driver)  # стартовая страница
-#     my_products = MyProducts(driver)  # мои продукты
-#     tariff_up = TariffUp(driver)
-#     precheck = Precheck(driver)
-#     check = Check(driver)
-#     success_page = SuccessPage(driver)
-#     base = BaseApp(driver)
-#     errors = []
-#
-#     name_dtm = "Сервисы Яндекс"
-#     price_dtm = f"{data.get('Ясервисы')}"
-#     value_gb = f"{data.get('Гб')}"
-#     value_min = f"{data.get('Мин')}"
-#     price_main = f"{data.get('АППодключен')}"
-#     price_tp = f"{data.get('АП')}"
-#     gb_main = f"{data.get('ГбПодключен')}"
-#     min_main = f"{data.get('МинПодключен')}"
-#     name_main = f"{data.get('Название')}"
-#
-#     #Стартовая страница -> переход в мои продукты
-#     page_main.go_my_product()
-#     # Мои продукты -> переход в настройки тарифа
-#     my_products.settings_click()
-#     # Ожидание страницы UP
-#     tariff_up.wait_tariff_up_page(name_main)
-#     # Выбор ГБ
-#     tariff_up.select_gb(value_gb)
-#     # выбор МИН
-#     tariff_up.select_min(value_min)
-#     # Скролл вниз
-#     tariff_up.scroll_down_up()
-#     # Поиск клик по тоглу дтм опции
-#     tariff_up.dtm_toggle_click(name_dtm)
-#     # Проверка АП дтм опции
-#     tariff_up.dtm_ap(name_dtm, price_dtm)
-#     #Проверка общей АП ТП + ДТМ
-#     tariff_up.button_price(price_main)
-#     # Клик далее
-#     tariff_up.button_next_click()
-#     # Ожидание предчека
-#     precheck.wait_page_precheck()
-#     # Текст с отключаемыми услугами
-#     # precheck_page.dtm_delete()
-#     # # Текст с изменением тарифа
-#     precheck.changing_tariff()
-#     # Клик по кнопке продолжить
-#     precheck.button_next()
-#     # Ожидание страницы чека
-#     check.wait_check_page(name_main)
-#     # Проверка описания мобильной связи
-#     check.mobil_text()
-#     # Стоимость мобильной связи
-#     check.mobil_price(price_tp)
-#     # Проверка в чеке дтм опции
-#     check.dtm_name(name_dtm)
-#     # Стоимость опции дтм
-#     check.dtm_price(name_dtm, price_dtm)
-#     # Проверка описания в тултипе ИНФО
-#     check.info_text()
-#     #Проверка АП на кнопке оплатить
-#     check.button_price(price_main)
-#     #Клик по кнопке оплатить
-#     # check_page.button_pay_click()
-#     # # Текст с отключаемыми услугами
-#     # success_page.page_text()
-#     # # Клик по кнопке продолжить
-#     # success_page.button_understand_click()
-#     # #Переход на главную страницу
-#     # my_products_page.go_main()
-#     # #Ожидание изменения тарифа
-#     # my_products_page.wait_changes_tariff(gb_main)
-#     # # Проверка АП тарифа после смены
-#     # my_products_page.ap(price_main)
-#     # # # Проверка ГБ тарифа после смены
-#     # my_products_page.gb(gb_main)
-#     # # Проверка МИН тарифа после смены
-#     # my_products_page.min(min_main)
-#     # # Проверка Имени тарифа после смены
-#     # my_products_page.name(name_main)
-#     # # Проверка Даты списания тарифа после смены
-#     # my_products_page.data()
-#     # Логирование всех ошибок в конце
-#     if errors:
-#         allure.attach(
-#             "\n".join(errors),
-#             name="Список ошибок",
-#             attachment_type=allure.attachment_type.TEXT
-#         )
-#         assert False, "Тест завершился с ошибками."
-#
-# @allure.feature('Тестирование тарифа UP')
-# # Тестовая функция, использующая обе фикстуры
-# def test_smena_pr(driver, file_data):
-#     for row in file_data:
-#         execute_scenario(driver, row)
-# # def test_smena_pr(driver, test_data):
-# #     for index, row in enumerate(test_data):
-# #         if index == 0:
-# #             execute_scenario(driver, row)
-# #             break
-# #         else:
-# #             continue
-#
-# def execute_step(step_name, func, *args, **kwargs):
-#     """
-#     Обёртка для выполнения шага с логированием ошибок в Allure.
-#     """
-#     with allure.step(step_name):
-#         try:
-#             return func(*args, **kwargs)
-#         except AssertionError as e:
-#             allure.attach(
-#                 str(e),
-#                 name="Ошибка шага",
-#                 attachment_type=allure.attachment_type.TEXT
-#             )
-#             assert False, f"Шаг '{step_name}' провалился: {e}"
-#         except Exception as e:
-#             allure.attach(
-#                 str(e),
-#                 name="Непредвиденная ошибка",
-#                 attachment_type=allure.attachment_type.TEXT
-#             )
-#             assert False, f"Шаг '{step_name}' завершился с ошибкой: {e}"
+import allure
+import pandas as pd
+
+@allure.feature("Тестирование тарифа UP")
+class TestChangePlan:
+    def __init__(self, data, app_pages):
+
+        self.data = data
+        self.app_pages = app_pages
+        #Переменные из файла
+        #Тариф
+        self.name_tp = str(data.get('new_tariff_name')) # Название тарифа
+        self.value_gb = int(data.get('new_gb_value')) # Подключаемый пакет ГБ
+        self.value_min = int(data.get('new_min_value')) # Подключаемый пакет Мин
+        self.price_tp = int(data.get('new_tariff_price')) # Стоимость за мобильную связь
+
+        #ДТМ опция
+        if not pd.isna(data.get('new_options_name')):
+            self.name_dtm = str(data.get('new_options_name'))  # ДТМ опция
+        if not pd.isna(data.get('new_options_price')):
+            self.price_dtm = int(data.get('new_options_price'))
+        else:
+            self.price_dtm = 0  # Цена ДТМ опции
+        if not pd.isna(data.get('old_options_name')):
+            self.name_dtm_old = str(data.get('old_options_name')) #Старая дтп опция
+        #Данные старого тарифа
+        # Стоимость тарифа
+        old_tariff_price = data.get('old_tariff_price')
+        if pd.isna(old_tariff_price):
+            self.price_tp_old = 0
+        else:
+            self.price_tp_old = int(old_tariff_price)
+        # Начисленные ГБ
+        old_gb_value = data.get('old_gb_value')
+        if pd.isna(old_gb_value):
+            self.value_gb_old = 0
+        else:
+            self.value_gb_old = int(old_gb_value)
+        # Начисленные Мин
+        old_min_value = data.get('old_min_value')
+        if pd.isna(old_min_value):
+            self.value_min_old = 0
+        else:
+            self.value_min_old = int(old_min_value)
+        #Итоговая данные тарифа
+        self.price_total = self.price_tp + self.price_dtm #общая цена тп + дтм опция
+        if self.value_gb < self.value_gb_old:
+            self.value_gb_total = self.value_gb_old
+        else:
+            self.value_gb_total = self.value_gb
+        if self.value_min < self.value_min_old:
+            self.value_min_total = self.value_min_old
+        else:
+            self.value_min_total = self.value_min
+    def test_go_settings_tariff(self):
+        #Стартовая страница -> переход в мои продукты
+        self.app_pages.main.go_my_product()
+        # Мои продукты -> переход в настройки тарифа
+        self.app_pages.my_products.settings_click()
+        # Ожидание страницы UP
+        self.app_pages.tariff_up.wait_page(self.name_tp)
+    def test_go_new_tariff(self):
+        #Стартовая страница -> переход в мои продукты
+        self.app_pages.main.go_my_product()
+        # Мои продукты -> переход на страницу смены тариф
+        self.app_pages.my_products.change_tariff_click()
+    def test_select_tariff(self, app_pages):
+        # Выбор тарифа
+        self.app_pages.list.go_tariff(self.name_tp)
+        # Ожидание страницы UP
+        self.app_pages.tariff_up.wait_page(self.name_tp)
+    def test_select_data(self):
+        # Выбор ГБ
+        self.app_pages.tariff_up.select_gb(self.value_gb)
+
+    def test_select_voice(self):
+        # выбор МИН
+        self.app_pages.tariff_up.select_min(self.value_min)
+
+    def test_select_dtm(self):
+        # Скролл вниз
+        self.app_pages.tariff_up.scroll_down_up()
+        # Поиск клик по тоглу дтм опции
+        self.app_pages.tariff_up.dtm_toggle_click(self.name_dtm)
+        # Проверка АП дтм опции
+        try:
+            self.app_pages.tariff_up.dtm_price(self.name_dtm, self.price_dtm)
+        except Exception as e:
+            allure.attach(str(e), name="Ошибка", attachment_type=allure.attachment_type.TEXT)
+
+    def test_dtm_price(self):
+        # Скролл вниз
+        self.app_pages.tariff_up.scroll_down_up()
+        # Проверка АП дтм опции
+        try:
+            self.app_pages.tariff_up.dtm_price(self.name_dtm, self.price_dtm)
+        except Exception as e:
+            allure.attach(str(e), name="Ошибка", attachment_type=allure.attachment_type.TEXT)
+
+    def test_tariff_price(self, name):#Проверка общей АП ТП + ДТМ
+        try:
+            self.app_pages.tariff_up.button_price(self.price_total, name)
+        except Exception as e:
+            allure.attach(str(e), name="Ошибка", attachment_type=allure.attachment_type.TEXT)
+        # Клик далее
+        self.app_pages.tariff_up.button_next_click(name)
+
+    def test_precheck(self, old_dtm_name, changing_tariff):# Ожидание предчека
+        self.app_pages.precheck.wait_page_precheck()
+        if old_dtm_name is None:
+            try:
+                if changing_tariff is not None:
+                    self.app_pages.precheck.changing_tariff(self.value_gb, self.value_min, self.price_tp, self.value_gb_old, self.value_min_old, self.price_tp_old,  self.price_dtm)
+            except Exception as e:
+                allure.attach(str(e), name="Ошибка", attachment_type=allure.attachment_type.TEXT)
+            self.app_pages.precheck.button_next()
+        else:
+            try:
+                self.app_pages.precheck.dtm_delete(old_dtm_name)
+                if changing_tariff is not None:
+                    self.app_pages.precheck.changing_tariff(self.value_gb, self.value_min, self.price_tp, self.value_gb_old, self.value_min_old, self.price_tp_old,  self.price_dtm)
+            except Exception as e:
+                allure.attach(str(e), name="Ошибка", attachment_type=allure.attachment_type.TEXT)
+            self.app_pages.precheck.button_next()
+
+    def test_check_text(self, text_part):
+        self.app_pages.check.wait_check_page(self.name_tp)
+        try:
+            self.app_pages.check.mobil_text(self.value_gb, self.value_gb_old, self.value_min, self.value_min_old, text_part)
+        except Exception as e:
+            allure.attach(str(e), name="Ошибка", attachment_type=allure.attachment_type.TEXT)
+    def test_check_mobile_price(self, text_part):
+        self.app_pages.check.wait_check_page(self.name_tp)
+        try:
+            self.app_pages.check.mobil_price(self.price_tp, self.price_tp_old, self.value_gb, self.value_gb_old, self.value_min, self.value_min_old, text_part)
+        except Exception as e:
+            allure.attach(str(e), name="Ошибка", attachment_type=allure.attachment_type.TEXT)
+
+    def test_check_dtm(self, price, text_part):
+        self.app_pages.check.wait_check_page(self.name_tp)
+        try:
+            if price is not None:
+                self.app_pages.check.dtm_price(self.name_dtm, self.price_dtm, text_part)
+            else:
+                self.app_pages.check.dtm_name(self.name_dtm_old)
+        except Exception as e:
+            allure.attach(str(e), name="Ошибка", attachment_type=allure.attachment_type.TEXT)
+    def test_single_payment(self):
+        try:
+            self.app_pages.check.single_payment()
+        except Exception as e:
+            allure.attach(str(e), name="Ошибка", attachment_type=allure.attachment_type.TEXT)
+
+    def test_check_info(self):
+        try:
+            self.app_pages.check.info_text(self.value_gb, self.value_min, self.price_tp, self.value_gb_old, self.value_min_old, self.price_tp_old,  self.price_dtm)
+        except Exception as e:
+            allure.attach(str(e), name="Ошибка", attachment_type=allure.attachment_type.TEXT)
+        self.app_pages.check.button_understand_click()
+    def test_check_price(self, payment, price):
+        try:
+            self.app_pages.check.button_price(price + payment + self.price_dtm)
+        except Exception as e:
+            allure.attach(str(e), name="Ошибка", attachment_type=allure.attachment_type.TEXT)
+    #Клик по кнопке оплаты
+    def test_button_pay_click(self):
+        self.app_pages.check.button_pay_click()
+    #Клик по кнопке Сохранить
+    def test_button_save_click(self):
+        self.app_pages.check.button_save_click()
+    # Проверка страницы успеха
+    def test_success_page(self):
+        try:
+            self.app_pages.status.success_text()
+        except Exception as e:
+            allure.attach(str(e), name="Ошибка", attachment_type=allure.attachment_type.TEXT)
+    #Проверка страницы недостаточности средств
+    def test_low_balance_page(self):
+        #Проверка текста недостаточности средств
+        self.app_pages.status.low_balance_text()
+        #Проверка перехода на страницу пополнения баланса
+        self.app_pages.status.pay_balance()
+    # Клик по кнопке Понятно
+    def test_status_button_understand_click(self):
+        self.app_pages.status.button_understand_click()
+    #Переход на главную страницу
+    def test_go_main(self):
+        self.app_pages.my_products.go_main()
+    #Ожидание изменения тарифа
+    def test_wait_tariff(self, param):
+        if param == 1:
+            number = self.value_gb_total
+            text = 'гб'
+            self.app_pages.my_products.wait_changes_tariff(number, text)
+        elif param == 2:
+            number = self.value_min_total
+            text = 'мин'
+            self.app_pages.my_products.wait_changes_tariff(number, text)
+        elif param == 3:
+            number = self.price_total
+            text = '₽/мес'
+            self.app_pages.my_products.wait_changes_tariff(number, text)
+
+    # Проверка АП тарифа после смены
+    def test_ap_tariff(self):
+        try:
+            self.app_pages.my_products.ap(self.price_total)
+        except Exception as e:
+            allure.attach(str(e), name="Ошибка", attachment_type=allure.attachment_type.TEXT)
+    # Проверка ГБ тарифа после смены
+    def test_gb_tariff(self):
+        try:
+            self.app_pages.my_products.gb(self.value_gb_total)
+        except Exception as e:
+            allure.attach(str(e), name="Ошибка", attachment_type=allure.attachment_type.TEXT)
+    # Проверка МИН тарифа после смены
+    def test_min_tariff(self):
+        try:
+            self.app_pages.my_products.min(self.value_min_total)
+        except Exception as e:
+            allure.attach(str(e), name="Ошибка", attachment_type=allure.attachment_type.TEXT)
+    # Проверка названия тарифа после смены
+    def test_name_tariff(self):
+        try:
+            self.app_pages.my_products.name(self.name_tp)
+        except Exception as e:
+            allure.attach(str(e), name="Ошибка", attachment_type=allure.attachment_type.TEXT)
+    # Проверка Даты списания следующего списания АП
+    def test_date_tariff(self):
+        try:
+            self.app_pages.my_products.data()
+        except Exception as e:
+            allure.attach(str(e), name="Ошибка", attachment_type=allure.attachment_type.TEXT)
+
+
+
+@allure.feature("Тестирование тарифа UP")
+def test_smena_pr(driver, file_data, app_pages):
+    """
+    Запускает тесты на основе данных из файла.
+    """
+    # for row in file_data:
+    #     execute_scenario(driver, row, app_pages)
+
+    for row in file_data:
+        process_tariff_changes(driver, row, app_pages)
+
+
+def process_tariff_changes(driver, row, app_pages):
+
+    test_plan = TestChangePlan(row, app_pages)
+    # Проверка смены тарифного плана (ТП)
+    if row['old_tariff_soc'] != row['new_tariff_soc']:
+        with allure.step(f'Тест-кейс: смена тарифа "{row['new_tariff_name']}"'):
+                test_plan.test_date_tariff()
+
+    # Проверка смены пресета
+    elif row['old_tariff_soc'] == row['new_tariff_soc']:
+        with allure.step(f'Тест-кейс: смена пресета "{row['new_tariff_name']}"'):
+            if (row['old_gb_value'] != row['new_gb_value']) or (row['old_min_value'] != row['new_min_value']):
+                test_plan.test_date_tariff()
+
+

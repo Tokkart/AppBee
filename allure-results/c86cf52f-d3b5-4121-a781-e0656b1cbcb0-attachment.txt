@@ -1,0 +1,2 @@
+find_element: Элемент с локатором (accessibility id, info) не найден.
+Иконка "info" не найдена

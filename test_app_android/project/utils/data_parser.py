@@ -7,5 +7,5 @@ def parse_test_data(file_path):
     """
     data = pd.ExcelFile(file_path)
     sheet_data = data.parse('Global')
-    filtered_data = sheet_data.dropna(subset=['Сценарий'])
-    return filtered_data.to_dict(orient='records')
+    # filtered_data = sheet_data.dropna(subset=['Сценарий'])
+    return  sheet_data.to_dict(orient='records')

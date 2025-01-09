@@ -6,8 +6,8 @@ from test_app_android.project.pages.myproducts_page import MyProducts
 from test_app_android.project.pages.tariff_up_page import TariffUp
 from test_app_android.project.pages.precheck_page import Precheck
 from test_app_android.project.pages.check_page import Check
-from test_app_android.project.pages.success_page import SuccessPage
-
+from test_app_android.project.pages.status_page import StatusPage
+from test_app_android.project.pages.tariff_list_page import List
 
 @pytest.fixture(scope="function")
 def driver(request):
@@ -20,13 +20,12 @@ def driver(request):
     request.addfinalizer(fin)
     return driver
 
-
 @pytest.fixture(scope="session")
 def file_data():
     """
     Загрузка тестовых данных из Excel.
     """
-    file_path = r'C:\Users\verli\Downloads\data test.xlsx'
+    file_path = r'C:\Users\verli\Downloads\data test2.xlsx'
     return parse_test_data(file_path)
 
 @pytest.fixture(scope="function")
@@ -41,6 +40,8 @@ def app_pages(driver):
             self.tariff_up = TariffUp(driver)
             self.precheck = Precheck(driver)
             self.check = Check(driver)
-            self.success = SuccessPage(driver)
+            self.status = StatusPage(driver)
+            self.list = List(driver)
 
     return Pages(driver)
+

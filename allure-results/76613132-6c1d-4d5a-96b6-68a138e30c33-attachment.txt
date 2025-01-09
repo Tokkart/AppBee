@@ -1,0 +1,1 @@
+cannot access local variable 'next_text' where it is not associated with a value

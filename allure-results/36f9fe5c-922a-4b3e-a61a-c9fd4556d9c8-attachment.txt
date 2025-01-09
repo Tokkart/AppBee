@@ -1,0 +1,1 @@
+BaseApp.generate_changing_tariff_text() missing 1 required positional argument: 'price_dtm'

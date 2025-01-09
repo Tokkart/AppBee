@@ -1,0 +1,1 @@
+find_element: Элемент с локатором (-android uiautomator, new UiSelector().textStartsWith("Увеличение")) не найден.

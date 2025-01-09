@@ -6,14 +6,22 @@ import allure
 @allure.title('Страница Главного экрана')
 # Стартовая страница main_page.py
 class MainPage(BaseApp):
-    def go_my_product(self):   #Переход в мои продукты
-        #Переход в мои продукты
-        go_my_product = self.wait_for_element(AppiumBy.ANDROID_UIAUTOMATOR, 'new UiSelector().className("android.view.View").instance(20)')
-        if go_my_product:
-            go_my_product.click()
-            print('Переход в "Мои продукты"')
-        else:
-            print('Кнопка для перехода в "Мои продукты" не найдена')
+    with allure.step(f'Переход в Мои продукты'):
+        def go_my_product(self):   #Переход в мои продукты
+            #Переход в мои продукты
+            go_my_product = self.wait_for_element(AppiumBy.XPATH, '(//android.widget.FrameLayout[@resource-id="ru.beeline.services:id/bottom_bar_fragment_container"])[2]/androidx.compose.ui.platform.ComposeView/android.view.View/android.widget.ScrollView/android.view.View[2]/android.widget.ScrollView/android.view.View[1]/android.view.View[2]')
+            try:
+                assert go_my_product, 'Кнопка для перехода в мои продукты не найдена'
+                go_my_product.click()
+            except AssertionError as e: # Перехватываем именно AssertionError
+                allure.attach(str(e), name="Ошибка", attachment_type=allure.attachment_type.TEXT)
+                screenshot = self.driver.get_screenshot_as_png()
+                allure.attach(screenshot, name="Скриншот", attachment_type=allure.attachment_type.PNG)
+                raise # Важно пробросить исключение дальше
+            except Exception as e: # Обрабатываем другие возможные исключения
+                allure.attach(str(e), name="Непредвиденная ошибка", attachment_type=allure.attachment_type.TEXT)
+                screenshot = self.driver.get_screenshot_as_png()
+                allure.attach(screenshot, name="Скриншот", attachment_type=allure.attachment_type.PNG)
 #Класс стартовой страницы
 class Main:
     def __init__(self, driver):
