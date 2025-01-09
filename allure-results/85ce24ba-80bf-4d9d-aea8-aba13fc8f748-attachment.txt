@@ -1,9 +1,0 @@
-find_element: Элемент с локатором (-android uiautomator, new UiSelector().text("Тариф UP")) не найден.
-Элемент "Тариф UP" не найден.
-Попытка скролла вниз: 1
-find_element: Элемент с локатором (-android uiautomator, new UiSelector().text("Тариф UP")) не найден.
-Элемент "Тариф UP" не найден.
-Попытка скролла вниз: 2
-find_element: Элемент с локатором (-android uiautomator, new UiSelector().text("Тариф UP")) не найден.
-Элемент "Тариф UP" не найден.
-Попытка скролла вниз: 3

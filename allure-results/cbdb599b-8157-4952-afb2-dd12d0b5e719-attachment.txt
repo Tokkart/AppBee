@@ -1,1 +1,0 @@
-Ошибка: неверное значение "<appium.webdriver.webelement.WebElement (session="2173d967-5adf-4f42-aa96-e0199a5ebd00", element="00000000-0000-0032-0000-073c0000002d")>", должно:540, получено: None

@@ -1,2 +1,0 @@
-find_element: Элемент с локатором (-android uiautomator, new UiSelector().text("<appium.webdriver.webelement.WebElement (session="aea5e9ce-f109-411f-818e-f4f8853ad633", element="00000000-0000-002c-0000-073c0000002d")>")) не найден.
-Элемент "<appium.webdriver.webelement.WebElement (session="aea5e9ce-f109-411f-818e-f4f8853ad633", element="00000000-0000-002c-0000-073c0000002d")>" не найден.

@@ -1,6 +1,0 @@
-Кликнуто по элементу 6 гб.
-Кликнуто по элементу 300 мин.
-координаты родительского элемента: [678,450][1332,910]
-координаты родительского элемента: [678,450][1332,910]
-find_element: Элемент с локатором (-android uiautomator, new UiSelector().textStartsWith("Увеличение")) не найден.
-find_element: Элемент с локатором (-android uiautomator, new UiSelector().textStartsWith("Новые")) не найден.

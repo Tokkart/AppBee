@@ -1,5 +1,0 @@
-Кликнуто по тогглу '100 SMS'
-find_element: Элемент с локатором (-android uiautomator, new UiSelector().textStartsWith("Остаток")) не найден.
-find_element: Элемент с локатором (-android uiautomator, new UiSelector().text("100 SMS")) не найден.
-Элемент "100 SMS" не найден.
-find_element: Элемент с локатором (-android uiautomator, new UiSelector().textStartsWith("Остаток")) не найден.
