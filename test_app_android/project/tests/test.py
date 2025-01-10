@@ -77,16 +77,20 @@ class TestChangePlan:
         # выбор МИН
         self.app_pages.tariff_up.select_min(self.value_min)
 
-    def test_select_dtm(self):
+    def test_select_dtm(self, status):
         # Скролл вниз
         self.app_pages.tariff_up.scroll_down_up()
-        # Поиск клик по тоглу дтм опции
-        self.app_pages.tariff_up.dtm_toggle_click(self.name_dtm)
-        # Проверка АП дтм опции
-        try:
-            self.app_pages.tariff_up.dtm_price(self.name_dtm, self.price_dtm)
-        except Exception as e:
-            allure.attach(str(e), name="Ошибка", attachment_type=allure.attachment_type.TEXT)
+        if status == 'on':
+            # Поиск клик по тоглу дтм опции
+            self.app_pages.tariff_up.dtm_toggle_click(self.name_dtm)
+            # Проверка АП дтм опции
+            try:
+                self.app_pages.tariff_up.dtm_price(self.name_dtm, self.price_dtm)
+            except Exception as e:
+                allure.attach(str(e), name="Ошибка", attachment_type=allure.attachment_type.TEXT)
+        elif status == 'off':
+            # Поиск клик по тоглу дтм опции
+            self.app_pages.tariff_up.dtm_toggle_click(self.name_dtm_old)
 
     def test_dtm_price(self):
         # Скролл вниз
@@ -105,23 +109,19 @@ class TestChangePlan:
         # Клик далее
         self.app_pages.tariff_up.button_next_click(name)
 
-    def test_precheck(self, old_dtm_name, changing_tariff):# Ожидание предчека
-        self.app_pages.precheck.wait_page_precheck()
-        if old_dtm_name is None:
+    def test_precheck(self, old_dtm_name, changing_tariff):# Проверка предчека
+        self.app_pages.precheck.wait_page_precheck()# Ожидание предчека
+        if old_dtm_name is not None:#Проверка отключаемой опции в предчеке
             try:
-                if changing_tariff is not None:
-                    self.app_pages.precheck.changing_tariff(self.value_gb, self.value_min, self.price_tp, self.value_gb_old, self.value_min_old, self.price_tp_old,  self.price_dtm)
+                self.app_pages.precheck.dtm_delete(self.name_dtm_old)
             except Exception as e:
                 allure.attach(str(e), name="Ошибка", attachment_type=allure.attachment_type.TEXT)
-            self.app_pages.precheck.button_next()
-        else:
+        if changing_tariff is not None: #Проверка изменения ТП в предчеке
             try:
-                self.app_pages.precheck.dtm_delete(old_dtm_name)
-                if changing_tariff is not None:
-                    self.app_pages.precheck.changing_tariff(self.value_gb, self.value_min, self.price_tp, self.value_gb_old, self.value_min_old, self.price_tp_old,  self.price_dtm)
+                self.app_pages.precheck.changing_tariff(self.value_gb, self.value_min, self.price_tp, self.value_gb_old, self.value_min_old, self.price_tp_old,  self.price_dtm)
             except Exception as e:
                 allure.attach(str(e), name="Ошибка", attachment_type=allure.attachment_type.TEXT)
-            self.app_pages.precheck.button_next()
+        self.app_pages.precheck.button_next()
 
     def test_check_text(self, text_part):
         self.app_pages.check.wait_check_page(self.name_tp)
@@ -268,7 +268,7 @@ def process_tariff_changes(driver, row, app_pages):
             #Проверка ДТМ (цена/подключение опции)
             if not pd.isna(row['new_options_price']):
                 if row['new_options_price'] > 0:
-                    test_plan.test_select_dtm()
+                    test_plan.test_select_dtm(status = "on")
                 else:
                     test_plan.test_dtm_price()
             #Проверка итоговой цены за тариф и переход далее
@@ -278,7 +278,7 @@ def process_tariff_changes(driver, row, app_pages):
                 test_plan.test_tariff_price(name = 'подключить')
             #Проверка предчека и переход далее
             if not pd.isna(row['old_options_name']):
-                test_plan.test_precheck(old_dtm_name = row['old_options_name'], changing_tariff = None)
+                test_plan.test_precheck(old_dtm_name = 1, changing_tariff = None)
             #Проверка чека
             #Проверка в чеке описания изменений тарифа (Текс/цена)
             test_plan.test_check_mobile_price(text_part = '₽/мес')
@@ -331,14 +331,16 @@ def process_tariff_changes(driver, row, app_pages):
                 #Проверка ДТМ (цена/подключение опции)
                 if not pd.isna(row['old_options_price']) and not pd.isna(row['new_options_price']):
                     if row['new_options_price'] > row['old_options_price']:
-                        test_plan.test_select_dtm()
+                        test_plan.test_select_dtm(status = "on")
                     else:
                         test_plan.test_dtm_price()
                 elif pd.isna(row['old_options_price']) and not pd.isna(row['new_options_price']):
                     if row['new_options_price'] > 0:
-                        test_plan.test_select_dtm()
+                        test_plan.test_select_dtm(status = "on")
                     else:
                         test_plan.test_dtm_price()
+                elif not pd.isna(row['old_options_price']) and pd.isna(row['new_options_price']):
+                    test_plan.test_select_dtm(status = "off")
                 #Проверка итоговой цены за тариф и переход далее
                 if row['old_tariff_soc'] == row['new_tariff_soc']:
                     test_plan.test_tariff_price(name = 'Продолжить')
@@ -346,7 +348,7 @@ def process_tariff_changes(driver, row, app_pages):
                     test_plan.test_tariff_price(name = 'подключить')
                 #Проверка предчека и переход далее
                 if not pd.isna(row['old_options_name']) and pd.isna(row['new_options_name']):
-                    test_plan.test_precheck(old_dtm_name = row['old_options_name'], changing_tariff = 1)
+                    test_plan.test_precheck(old_dtm_name = 1, changing_tariff = 1)
                 else:
                     test_plan.test_precheck(old_dtm_name = None, changing_tariff = 1)
                 #Проверка описания изменений тарифа (Текс/цена)
@@ -390,5 +392,51 @@ def process_tariff_changes(driver, row, app_pages):
                     test_plan.test_min_tariff()
                 test_plan.test_name_tariff()
                 test_plan.test_date_tariff()
+            else:
+                #Переходим в карточку тарифа
+                test_plan.test_go_settings_tariff()
+                #Проверка ДТМ (цена/подключение опции)
+                if not pd.isna(row['old_options_price']) and not pd.isna(row['new_options_price']):
+                    if row['new_options_price'] > row['old_options_price']:
+                        test_plan.test_select_dtm(status = "on")
+                    else:
+                        test_plan.test_dtm_price()
+                elif pd.isna(row['old_options_price']) and not pd.isna(row['new_options_price']):
+                    if row['new_options_price'] > 0:
+                        test_plan.test_select_dtm(status = "on")
+                    else:
+                        test_plan.test_dtm_price()
+                elif not pd.isna(row['old_options_price']) and pd.isna(row['new_options_price']):
+                    test_plan.test_select_dtm(status = "off")
+                #Проверка итоговой цены за тариф и переход далее
+                if row['old_tariff_soc'] == row['new_tariff_soc']:
+                    test_plan.test_tariff_price(name = 'Продолжить')
+                else:
+                    test_plan.test_tariff_price(name = 'подключить')
+                #Проверка дтм опции в чеке (Имя/цена)
+                if not pd.isna(row['old_options_price']) and pd.isna(row['new_options_price']):
+                    test_plan.test_check_dtm(price = None, text_part = '₽')
+                elif (pd.isna(row['old_options_price']) and not pd.isna(row['new_options_price'])) or (row['old_options_price'] < row['new_options_price']):
+                    test_plan.test_check_dtm(price = 1, text_part = '₽')
+                if not pd.isna(row['new_options_price']):
+                    test_plan.test_check_info()
+                #Проверка цены на кнопке оплатить и переход далее
+                if not pd.isna(row['old_options_name']) and pd.isna(row['new_options_name']):
+                    test_plan.test_button_save_click()
+                else:
+                    price = 0
+                    payment = 0
+                    test_plan.test_check_price(payment, price)
+                    test_plan.test_button_pay_click()
+                #Проверка экрана успеха и переход далее (возврат на главный экран)
+                test_plan.test_success_page()
+                test_plan.test_status_button_understand_click()
+                test_plan.test_go_main()
+                #Ожидание изменения тарифа на главном экране
+                param = 3   #проверяем по АП
+                test_plan.test_wait_tariff(param)
+                #Проверка данных тарифа поле подключения
+                test_plan.test_ap_tariff()
+
 
 

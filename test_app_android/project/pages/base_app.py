@@ -569,6 +569,8 @@ class BaseApp:
         else:
             last_text = ''
         name = f'{first_text}{next_text}{last_text}' #склейка всех частей в одну строку
+        if value_gb == value_gb_old and value_min == value_min_old:
+            name = f'Однократная плата за опции {price_dtm:,2f} ₽ — сейчас спишем только за дни, оставшиеся до обновления пакетов по тарифу. С {data} полная стоимость опций будет списываться вместе с платой за ГБ и минуты'
         return name
     def generate_check_text(self, value_gb, value_gb_old, value_min, value_min_old): #Генерация текста изменения тарифа конструктора
         data = self.data_through_30d() #получаем дату через 30 дней
