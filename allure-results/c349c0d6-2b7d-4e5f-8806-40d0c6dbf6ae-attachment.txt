@@ -1,0 +1,29 @@
+тип тест-кейса: preset
+Не найден элемент с текстом "('-android uiautomator', 'new UiSelector().text("из 15")')"
+элемент не найден: "из 15")
+Не найден элемент с текстом "('-android uiautomator', 'new UiSelector().text("из 15")')"
+элемент не найден: "из 15")
+Не найден элемент с текстом "('-android uiautomator', 'new UiSelector().text("из 15")')"
+элемент не найден: "из 15")
+Не найден элемент с текстом "('-android uiautomator', 'new UiSelector().text("из 15")')"
+элемент не найден: "из 15")
+Не найден элемент с текстом "('-android uiautomator', 'new UiSelector().text("из 15")')"
+элемент не найден: "из 15")
+Не найден элемент с текстом "('-android uiautomator', 'new UiSelector().text("из 15")')"
+элемент не найден: "из 15")
+Не найден элемент с текстом "('-android uiautomator', 'new UiSelector().text("из 15")')"
+элемент не найден: "из 15")
+Не найден элемент с текстом "('-android uiautomator', 'new UiSelector().text("из 15")')"
+элемент не найден: "из 15")
+Не найден элемент с текстом "('-android uiautomator', 'new UiSelector().text("из 15")')"
+элемент не найден: "из 15")
+Не найден элемент с текстом "('-android uiautomator', 'new UiSelector().text("из 15")')"
+элемент не найден: "из 15")
+180
+180
+из 15
+714
+180
+714
+из 600
+Элемент "Тариф UP" найден.

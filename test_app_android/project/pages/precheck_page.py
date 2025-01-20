@@ -1,4 +1,3 @@
-from selenium.webdriver.common.by import By
 from test_app_android.project.pages.base_app import BaseApp
 from appium.webdriver.common.appiumby import AppiumBy
 import allure
@@ -11,13 +10,19 @@ class PreCheckPage(BaseApp):
         with allure.step('Ожидание страницы предчека'):
             name = "Проверим, что меняется"
             precheck = self.wait_for_element(AppiumBy.ANDROID_UIAUTOMATOR, f'new UiSelector().text("{name}")')
-            assert precheck, 'Ошибка: страницы предчека не найдена'
-            # делаем скриншот
-            screenshot = self.driver.get_screenshot_as_png()
-            # добавляем скриншот в Allure
-            allure.attach(screenshot, "screenshot", allure.attachment_type.PNG)
+            try:
+                assert precheck, 'Ошибка: страницы предчека не найдена'
+            except AssertionError as e: # Перехватываем именно AssertionError
+                allure.attach(str(e), name="Ошибка страницы предчека", attachment_type=allure.attachment_type.TEXT)
+                screenshot = self.driver.get_screenshot_as_png()
+                allure.attach(screenshot, name="Скриншот", attachment_type=allure.attachment_type.PNG)
+                raise # Важно пробросить исключение дальше
+            except Exception as e: # Обрабатываем другие возможные исключения
+                allure.attach(str(e), name="Непредвиденная ошибка", attachment_type=allure.attachment_type.TEXT)
+                screenshot = self.driver.get_screenshot_as_png()
+                allure.attach(screenshot, name="Скриншот", attachment_type=allure.attachment_type.PNG)
     def delete_dtm(self, name):   #Проверка отключаемых услуг
-        with allure.step('Проверка отключаемых услуг в предчеке'):
+        with allure.step(f'Проверка отключаемых услуг в предчеке: "{name}"'):
             prefixes = ["При изменении тарифа"]
             element = self.find_text_with_prefixes(prefixes)
             if element:
@@ -32,7 +37,7 @@ class PreCheckPage(BaseApp):
                     allure.attach(str(e), name="Непредвиденная ошибка", attachment_type=allure.attachment_type.TEXT)
                     screenshot = self.driver.get_screenshot_as_png()
                     allure.attach(screenshot, name="Скриншот", attachment_type=allure.attachment_type.PNG)
-    def changing_tariff(self, value_gb, value_min, price_tp, value_gb_old, value_min_old, price_tp_old, price_dtm):   #Проверка текста, при изменении пакетов тарифа
+    def changing_tariff(self, value_gb, value_min, price_tp, value_gb_old, value_min_old, price_tp_old, price_dtm, cycle):#Проверка текста, при изменении пакетов тарифа
         with (allure.step('Проверка описания изменений тарифа в предчеке')):
             prefixes = ["Остаток", "Сейчас"]
             price = price_tp + price_dtm #итоговая цена
@@ -43,7 +48,7 @@ class PreCheckPage(BaseApp):
                 else:
                     delta = 0
             element = self.find_text_with_prefixes(prefixes).text #Поиск текста по первому слову (префиксу)
-            name = self.generate_changing_tariff_text(value_gb, value_gb_old, value_min, value_min_old, delta, price, price_dtm) #Создаем ожидаемый текст на основе параметров
+            name = self.generate_changing_tariff_text(value_gb, value_gb_old, value_min, value_min_old, delta, price, price_dtm, cycle) #Создаем ожидаемый текст на основе параметров
             if element:
                 try:
                     allure.attach(f"Ожидаемый: {name}\nПолученный: {element}", name="Текст изменений тарифа", attachment_type=allure.attachment_type.TEXT)
@@ -84,8 +89,8 @@ class Precheck:
     def dtm_delete(self, name):
         self.precheck.delete_dtm(name)
 #Текст с изменением тарифа
-    def changing_tariff(self, value_gb, value_min, price_tp, value_gb_old, value_min_old, price_tp_old, price_dtm):
-        self.precheck.changing_tariff(value_gb, value_min, price_tp, value_gb_old, value_min_old, price_tp_old, price_dtm)
+    def changing_tariff(self, value_gb, value_min, price_tp, value_gb_old, value_min_old, price_tp_old, price_dtm, cycle):
+        self.precheck.changing_tariff(value_gb, value_min, price_tp, value_gb_old, value_min_old, price_tp_old, price_dtm, cycle)
 #Клик по кнопке продолжить
     def button_next(self):
         self.precheck.button_next()

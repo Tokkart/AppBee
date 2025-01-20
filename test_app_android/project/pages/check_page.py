@@ -9,10 +9,16 @@ class CheckPage(BaseApp):
         with allure.step(f'Ожидание чека "{name}"'):
             tariff_up = self.wait_for_element(AppiumBy.ANDROID_UIAUTOMATOR, f'new UiSelector().text("{name}")')
             assert tariff_up, f'Страница чека "{name}" не найдена.'
+            # делаем скриншот
+            screenshot = self.driver.get_screenshot_as_png()
+            # добавляем скриншот в Allure
+            allure.attach(screenshot, "screenshot", allure.attachment_type.PNG)
     def dtm_name(self, name):   #Проверка отключаемых услуг
         with allure.step(f'Проверка отключаемых услуг "{name}"'):
             if name == '100 SMS':
                 name = 'Пакет 100 SMS'
+            elif name == 'Соцсети':
+                name = 'Социальные сети'
             element = self.get_element_by_text(name)
             try:
                 assert element.text, f'"{name}" услуга не найдена.'
@@ -31,10 +37,12 @@ class CheckPage(BaseApp):
         with allure.step(f'Проверка стоимости услуги "{name}"'):
             if name == '100 SMS':
                 name = 'Пакет 100 SMS'
+            elif name == 'Соцсети':
+                name = 'Социальные сети'
             dtm = self.check_name_price(name, text_part)
             try:
                 allure.attach(f"Ожидаемая: {price}, Полученная: {dtm}", name="Значения цен", attachment_type=allure.attachment_type.TEXT)
-                assert dtm == price, f'Ошибка: неверное значение {name},должно:{price}, получено: {dtm}'
+                assert float(dtm) == price, f'Ошибка: неверное значение {name},должно:{price}, получено: {dtm}'
             except AssertionError as e: # Перехватываем именно AssertionError
                 allure.attach(str(e), name="Ошибка сравнения цен", attachment_type=allure.attachment_type.TEXT)
                 screenshot = self.driver.get_screenshot_as_png()
@@ -45,12 +53,12 @@ class CheckPage(BaseApp):
                 screenshot = self.driver.get_screenshot_as_png()
                 allure.attach(screenshot, name="Скриншот", attachment_type=allure.attachment_type.PNG)
                 raise # Важно пробросить исключение дальше
-    def mobil_text(self, value_gb, value_gb_old, value_min, value_min_old, text_part):   #Проверка текст мобильной связи
+    def mobil_text(self, value_gb, value_gb_old, value_min, value_min_old, text_part, cycle):   #Проверка текст мобильной связи
         with allure.step('Проверка описания мобильной связи в чеке'):
             prefixes = ["Увеличение", "Новые", f"{value_gb}"]
             element = self.find_text_with_prefixes(prefixes)
             mobil_text = element.text
-            if text_part == '₽/мес':
+            if text_part == '₽/мес' or cycle == 'd':
                 generate_text = f'{value_gb} ГБ и {value_min} минут'
             else:
                 generate_text = self.generate_check_text(value_gb, value_gb_old, value_min, value_min_old)
@@ -69,19 +77,21 @@ class CheckPage(BaseApp):
                     screenshot = self.driver.get_screenshot_as_png()
                     allure.attach(screenshot, name="Скриншот", attachment_type=allure.attachment_type.PNG)
                 return mobil_text
-    def mobil_price(self, price_tp, price_tp_old, value_gb, value_gb_old, value_min, value_min_old, text_part):
+    def mobil_price(self, price_tp, price_tp_old, value_gb, value_gb_old, value_min, value_min_old, text_part, cycle):
         with allure.step(f'Проверка стоимости мобильной связи'):
-            name = self.mobil_text(value_gb, value_gb_old, value_min, value_min_old, text_part)
+            name = self.mobil_text(value_gb, value_gb_old, value_min, value_min_old, text_part, cycle)
             delta = price_tp - price_tp_old #Находим сумму доплаты
             if delta <= 0:
                 if value_gb > value_gb_old or value_min > value_min_old:
                     delta = 30
                 else:
                     delta = 0
+            elif cycle == 'd':
+                delta = price_tp
             try:
                 mobil = self.check_name_price(name, text_part)
                 allure.attach(f"Ожидаемая: {delta}, Полученная: {mobil}", name="Значения цен", attachment_type=allure.attachment_type.TEXT)
-                assert mobil == delta, f'Ошибка: неверное значение "{name}", должно:{delta}, получено: {mobil}'
+                assert mobil == int(delta), f'Ошибка: неверное значение "{name}", должно:{delta}, получено: {mobil}'
             except AssertionError as e: # Перехватываем именно AssertionError
                 # allure.attach(str(e), name="Ошибка сравнения цен", attachment_type=allure.attachment_type.TEXT)
                 screenshot = self.driver.get_screenshot_as_png()
@@ -92,15 +102,17 @@ class CheckPage(BaseApp):
                 screenshot = self.driver.get_screenshot_as_png()
                 allure.attach(screenshot, name="Скриншот", attachment_type=allure.attachment_type.PNG)
                 raise # Важно пробросить исключение дальше
-    def info_text(self, value_gb, value_min, price_tp, value_gb_old, value_min_old, price_tp_old, price_dtm):  #Проверка текста в иконке Инфо
+    def info_text(self, value_gb, value_min, price_tp, value_gb_old, value_min_old, price_tp_old, price_dtm, cycle):  #Проверка текста в иконке Инфо
         with allure.step(f'Проверка описания в тултипе info'):
             #Получение текста
-            prefixes = ["Остаток", "Сейчас", "Однократная"]
+            prefixes = ["Остаток", "Сейчас", "Однократная", "Так"]
             price = price_tp + price_dtm #итоговая цена
             delta = price_tp - price_tp_old#Находим сумму доплаты
             if delta <= 0:
                 if value_gb > value_gb_old or value_min > value_min_old:
                     delta = 30
+                elif cycle == 'd':
+                    price = price_tp
                 else:
                     delta = 0
             self.check_info_click()   #Клик по иконке инфо
@@ -110,7 +122,7 @@ class CheckPage(BaseApp):
             # добавляем скриншот в Allure
             allure.attach(screenshot, "screenshot", allure.attachment_type.PNG)
             element = self.find_text_with_prefixes(prefixes).text
-            name = self.generate_changing_tariff_text(value_gb, value_gb_old, value_min, value_min_old, delta, price, price_dtm) #Создаем ожидаемый текст на основе параметров
+            name = self.generate_changing_tariff_text(value_gb, value_gb_old, value_min, value_min_old, delta, price, price_dtm, cycle) #Создаем ожидаемый текст на основе параметров
             if element:
                 try:
                     allure.attach(f"Ожидаемый: {name}\nПолученный: {element}", name="Текст изменений тарифа", attachment_type=allure.attachment_type.TEXT)
@@ -156,7 +168,7 @@ class CheckPage(BaseApp):
             try:
                 ap = self.check_name_price(element, text_part)
                 allure.attach(f"Ожидаемая: {price}, Полученная: {ap}", name="Значения цен", attachment_type=allure.attachment_type.TEXT)
-                assert ap == price, f'Ошибка: неверное значение {element}, должно:{price}, получено: {ap}'
+                assert ap == int(price), f'Ошибка: неверное значение {element}, должно:{price}, получено: {ap}'
             except AssertionError as e: # Перехватываем именно AssertionError
                 # allure.attach(str(e), name="Ошибка сравнения цен", attachment_type=allure.attachment_type.TEXT)
                 screenshot = self.driver.get_screenshot_as_png()
@@ -186,11 +198,11 @@ class Check:
     def wait_check_page(self, name):
         self.check.wait_check_page(name)
 # Стоимость мобильной связи
-    def mobil_price(self, price_tp, price_tp_old, value_gb, value_gb_old, value_min, value_min_old, text_part):
-        self.check.mobil_price(price_tp, price_tp_old, value_gb, value_gb_old, value_min, value_min_old, text_part)
+    def mobil_price(self, price_tp, price_tp_old, value_gb, value_gb_old, value_min, value_min_old, text_part, cycle):
+        self.check.mobil_price(price_tp, price_tp_old, value_gb, value_gb_old, value_min, value_min_old, text_part, cycle)
 #Текст мобильной связи, описание изменений
-    def mobil_text(self, value_gb, value_gb_old, value_min, value_min_old, text_part):
-        self.check.mobil_text(value_gb, value_gb_old, value_min, value_min_old, text_part)
+    def mobil_text(self, value_gb, value_gb_old, value_min, value_min_old, text_part, cycle):
+        self.check.mobil_text(value_gb, value_gb_old, value_min, value_min_old, text_part, cycle)
 #Проверка наличия опций в чеке
     def dtm_name(self, name):
         self.check.dtm_name(name)
@@ -201,8 +213,8 @@ class Check:
     def single_payment(self):
         self.check.single_payment()
 # Проверка текста в иконке Инфо
-    def info_text(self, value_gb, value_min, price_tp, value_gb_old, value_min_old, price_tp_old, price_dtm):
-        self.check.info_text(value_gb, value_min, price_tp, value_gb_old, value_min_old, price_tp_old, price_dtm)
+    def info_text(self, value_gb, value_min, price_tp, value_gb_old, value_min_old, price_tp_old, price_dtm, cycle):
+        self.check.info_text(value_gb, value_min, price_tp, value_gb_old, value_min_old, price_tp_old, price_dtm, cycle)
 #Клик по кнопке понятно
     def button_understand_click(self):
         self.check.button_understand_click()

@@ -1,6 +1,5 @@
-from selenium.webdriver.common.by import By
+from time import sleep
 from test_app_android.project.pages.base_app import BaseApp
-from appium.webdriver.common.appiumby import AppiumBy
 import allure
 
 
@@ -11,13 +10,18 @@ class TariffUpPage(BaseApp):
     def wait_page_up(self, name):
         name = name.lower()
         with allure.step(f'Ожидание загрузки страницы "{name}"'):
+            tariff_up = self.wait_page(name)
             try:
-                tariff_up = self.wait_page(name)
                 assert tariff_up, f'Ошибка: карточка тарифа "{name}" не найдена'
+                # делаем скриншот
+                screenshot = self.driver.get_screenshot_as_png()
+                # добавляем скриншот в Allure
+                allure.attach(screenshot, "screenshot", allure.attachment_type.PNG)
             except AssertionError as e: # Перехватываем именно AssertionError
                 allure.attach(str(e), name="Ошибка загрузки страницы", attachment_type=allure.attachment_type.TEXT)
                 screenshot = self.driver.get_screenshot_as_png()
                 allure.attach(screenshot, name="Скриншот", attachment_type=allure.attachment_type.PNG)
+            sleep(1)
     def gb(self, value):  #Поиск и выбор ГБ
         with allure.step(f'Выбираем ГБ "{value}"'):
             name = "гб"

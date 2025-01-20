@@ -1,3 +1,5 @@
+from time import sleep
+
 from appium.webdriver.common.appiumby import AppiumBy
 from test_app_android.project.pages.base_app import BaseApp
 import allure
@@ -13,6 +15,7 @@ class MainPage(BaseApp):
             try:
                 assert go_my_product, 'Кнопка для перехода в мои продукты не найдена'
                 go_my_product.click()
+                sleep(1)
             except AssertionError as e: # Перехватываем именно AssertionError
                 allure.attach(str(e), name="Ошибка", attachment_type=allure.attachment_type.TEXT)
                 screenshot = self.driver.get_screenshot_as_png()

@@ -1,0 +1,1 @@
+Ожидаемая: 15 февраля, Полученная: <appium.webdriver.webelement.WebElement (session="a63446dc-26d6-449f-af83-4f1de5676561", element="00000000-0000-006d-0000-0b2f0000003f")>

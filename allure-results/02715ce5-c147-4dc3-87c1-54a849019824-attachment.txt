@@ -1,0 +1,1 @@
+Попытка найти элемент с текстом: '('-android uiautomator', 'new UiSelector().textContains("оплата спишется")')'

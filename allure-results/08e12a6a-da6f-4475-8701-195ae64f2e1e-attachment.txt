@@ -1,0 +1,1 @@
+MyProductsPage.min() missing 1 required positional argument: 'number2'

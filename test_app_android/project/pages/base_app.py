@@ -22,7 +22,11 @@ class BaseApp:
         except Exception as e:
             # Обработка исключения, если элемент не найден
             print(f"Ошибка: Элемент с локатором ({locator_type}, {locator}) не найден.")
-            return None
+            print(f'Не найден элемент с текстом "{locator_type, locator}"')
+            allure.attach(f"Попытка найти элемент с текстом: '{locator_type, locator}'", name="Детали поиска", attachment_type=allure.attachment_type.TEXT)
+            screenshot = self.driver.get_screenshot_as_png()
+            allure.attach(screenshot, name="Скриншот", attachment_type=allure.attachment_type.PNG)
+            raise NoSuchElementException(f'Элемент с текстом "{locator_type, locator}" не найден')
     # Поиск элементов
     def find_elements(self, locator_type, locator):
         try:
@@ -31,7 +35,11 @@ class BaseApp:
         except Exception as e:
             # Обработка исключения, если элемент не найден
             print(f"find_elements: Элемент с локатором ({locator_type}, {locator}) не найден.")
-            return None
+            print(f'Не найден элемент с текстом "{locator_type, locator}"')
+            allure.attach(f"Попытка найти элемент с текстом: '{locator_type, locator}'", name="Детали поиска", attachment_type=allure.attachment_type.TEXT)
+            screenshot = self.driver.get_screenshot_as_png()
+            allure.attach(screenshot, name="Скриншот", attachment_type=allure.attachment_type.PNG)
+            raise NoSuchElementException(f'Элемент с текстом "{locator_type, locator}" не найден')
     # Поиск элемента с ожиданием
     def wait_for_element(self, locator_type, locator, timeout=15):
         try:
@@ -39,8 +47,11 @@ class BaseApp:
                 EC.presence_of_element_located((locator_type, locator))
             )
         except Exception as e:
-            # print(f"Ошибка: Элемент с локатором ({locator_type}, {locator}) не найден.")
-            return None
+            print(f'Не найден элемент с текстом "{locator_type, locator}"')
+            allure.attach(f"Попытка найти элемент с текстом: '{locator_type, locator}'", name="Детали поиска", attachment_type=allure.attachment_type.TEXT)
+            screenshot = self.driver.get_screenshot_as_png()
+            allure.attach(screenshot, name="Скриншот", attachment_type=allure.attachment_type.PNG)
+            raise NoSuchElementException(f'Элемент с текстом "{locator_type, locator}" не найден')
     # Проверка на отображение объекта
     def if_element_exist(self, locator_type, locator, wait_time=5):
         try:
@@ -221,7 +232,11 @@ class BaseApp:
             return element
         else:
             print(f'Элемент "{text}" не найден.')
-        return None
+        print(f'Не найден элемент с текстом "{text}"')
+        allure.attach(f"Попытка найти элемент с текстом: '{text}'", name="Детали поиска", attachment_type=allure.attachment_type.TEXT)
+        screenshot = self.driver.get_screenshot_as_png()
+        allure.attach(screenshot, name="Скриншот", attachment_type=allure.attachment_type.PNG)
+        raise NoSuchElementException(f'Элемент с текстом "{text}" не найден')
     def get_element_by_prefixes(self, text):
         try:
             return self.find_element(AppiumBy.ANDROID_UIAUTOMATOR, f'new UiSelector().textStartsWith("{text}")')
@@ -245,6 +260,8 @@ class BaseApp:
         for num in numbers:
             num_text = num.text
             num_bounds = num.get_attribute('bounds')
+            print(f'Элемент "{num_text}" найден')
+            print(f'Координаты "{num_bounds}" найдены')
             num_y = self.extract_y_from_bounds(num_bounds)
             # Проверяем, находится ли элементы с ГБ на одном уровне по Y
             if abs(gb_y - num_y) < 40:
@@ -356,22 +373,28 @@ class BaseApp:
             return element
             # Если ни один элемент не найден, возвращаем None
         print("Элемент с указанными префиксами не найден.")
-        return None
+        allure.attach(f"Попытка найти элемент с текстом: '{prefixes}'", name="Детали поиска", attachment_type=allure.attachment_type.TEXT)
+        screenshot = self.driver.get_screenshot_as_png()
+        allure.attach(screenshot, name="Скриншот", attachment_type=allure.attachment_type.PNG)
+        raise NoSuchElementException(f'Элемент с указанными префиксами не найден.')
     def check_name_price(self, name, text_part):  # Поиск стоимости cправа от нужного элемента
         # Получаем элемент с заданным текстом
         parent = self.get_element_by_text(name)
         if parent is None:
             print(f'Не найден элемент с текстом "{name}"')
-            return None
+            allure.attach(f"Попытка найти элемент с текстом: '{name}'", name="Детали поиска", attachment_type=allure.attachment_type.TEXT)
+            screenshot = self.driver.get_screenshot_as_png()
+            allure.attach(screenshot, name="Скриншот", attachment_type=allure.attachment_type.PNG)
+            raise NoSuchElementException(f'Элемент с текстом "{name}" не найден')
         element = self.get_element_bounds(parent)
         if element is None:
             print(f'Не найдены координаты "{name}"')
             return None
         # Ищем стоимость ДТМ
-        price_element = int(self.find_number(element, text_part).text.replace(text_part, "").replace(" ", ""))
+        price_element = float(self.find_number(element, text_part).text.replace(text_part, "").replace(" ", "").replace(",", "."))
         if price_element is None:
             return None
-        return price_element
+        return int(price_element) if price_element.is_integer() else float(price_element)
     def find_nearby_element(self, name, class_name, y_coordinate, direction):  # Поиск элемента, который находится радом от заданного, по имени класса и расстоянию
         # Получаем элемент с заданным текстом
         parent = self.get_element_by_text(name)
@@ -423,9 +446,13 @@ class BaseApp:
     def find_text_part_element(self, text_part): #Поиск значения нужного элемента
         price = self.find_element(AppiumBy.ANDROID_UIAUTOMATOR,f'new UiSelector().textContains("{text_part}")')
         if price:
-            return price.text.replace(text_part, '').replace(' ', '')
+            return price
         else:
-            return None
+            print(f'Не найден элемент с текстом "{text_part}"')
+            allure.attach(f"Попытка найти элемент с текстом: '{text_part}'", name="Детали поиска", attachment_type=allure.attachment_type.TEXT)
+            screenshot = self.driver.get_screenshot_as_png()
+            allure.attach(screenshot, name="Скриншот", attachment_type=allure.attachment_type.PNG)
+            raise NoSuchElementException(f'Элемент с текстом "{text_part}" не найден')
     @staticmethod
     def data_through_30d():  # Дата следующего списания через 30д
         # Устанавливаем локализацию на русский
@@ -521,7 +548,7 @@ class BaseApp:
                     allure.attach(str(e), name="Непредвиденная ошибка", attachment_type=allure.attachment_type.TEXT)
                     screenshot = self.driver.get_screenshot_as_png()
                     allure.attach(screenshot, name="Скриншот", attachment_type=allure.attachment_type.PNG)
-    def generate_changing_tariff_text(self, value_gb, value_gb_old, value_min, value_min_old, delta, price, price_dtm): #Генерация текста изменения тарифа конструктора
+    def generate_changing_tariff_text(self, value_gb, value_gb_old, value_min, value_min_old, delta, price, price_dtm, cycle): #Генерация текста изменения тарифа конструктора
         data = self.data_through_30d() #получаем дату через 30 дней
         #Текст про изменение пакетов
         first_parts = []
@@ -569,13 +596,20 @@ class BaseApp:
         else:
             last_text = ''
         name = f'{first_text}{next_text}{last_text}' #склейка всех частей в одну строку
-        if value_gb == value_gb_old and value_min == value_min_old:
-            name = f'Однократная плата за опции {price_dtm:,2f} ₽ — сейчас спишем только за дни, оставшиеся до обновления пакетов по тарифу. С {data} полная стоимость опций будет списываться вместе с платой за ГБ и минуты'
+        if value_gb == value_gb_old and value_min == value_min_old and cycle == 'm':
+            formatted_price = f"{price_dtm:.2f}".replace('.', ',')
+            name = f'Однократная плата за опции {formatted_price} ₽ — сейчас спишем только за дни, оставшиеся до обновления пакетов по тарифу. С {data} полная стоимость опций будет списываться вместе с платой за ГБ и минуты'
+        elif value_gb == value_gb_old and value_min == value_min_old and cycle == 'd':
+            formatted_price = f"{price_dtm:.2f}".replace('.', ',')
+            name = f'Так как сейчас плата по тарифу списывается посуточно, то и плата за подключаемые опции спишется за сутки в размере {formatted_price} ₽. С завтрашнего дня плата за опции будет списываться вместе с платой за минуты и ГБ.'
+        elif (value_gb != value_gb_old or value_min != value_min_old) and cycle == 'd':
+            name = f'Сейчас будут предоставлены новые {value_gb} ГБ и {value_min} минут, и спишется плата за 30 дней в размере {price} ₽.'
         return name
     def generate_check_text(self, value_gb, value_gb_old, value_min, value_min_old): #Генерация текста изменения тарифа конструктора
         data = self.data_through_30d() #получаем дату через 30 дней
         #Текст про изменение пакетов
         text_parts = []
+        check_text = None
         if value_gb > value_gb_old or value_min > value_min_old:
             if value_gb > value_gb_old:
                 text_parts.append('ГБ')
@@ -585,25 +619,35 @@ class BaseApp:
         elif value_gb <= value_gb_old and value_min <= value_min_old:
             check_text = f'Новые условия с {data} —\r\n{value_gb} ГБ и {value_min} минут'
         return check_text
-    def wait_page(self, name):
+    def wait_page(self, name): # Добавим локатор кнопки обновления как параметр
         max_attempts = 5
         attempt = 0
-        error_found = True
-        while attempt < max_attempts and error_found:
+        while attempt < max_attempts:
             try:
-                # Попытка проверить страницу чека
                 page = self.wait_for_element(AppiumBy.ANDROID_UIAUTOMATOR, f'new UiSelector().text("{name}")')
-                error_found = False  # Если страница загружена, выходим из цикла
-                if page:
-                    return page
+                return page  # Возвращаем страницу сразу, если найдена
             except WebDriverException:
-                attempt += 1
-                print(f"Попытка обновления: {attempt}")
-                # Нажатие на кнопку обновить
-                try:
-                    button = 'Обновить'
-                    self.button_click(button)
-                except WebDriverException:
-                    pytest.fail("Кнопка обновления недоступна.")
-        if error_found:
-            pytest.fail("Ошибка: при загрузке  страницы.")
+                error_text = self.find_element(AppiumBy.ANDROID_UIAUTOMATOR, 'new UiSelector().text("Что-то пошло не по плану")')
+                if error_text:
+                    attempt += 1
+                    print(f"Попытка обновления: {attempt}")
+                    try:
+                        update_button = self.find_element(AppiumBy.ANDROID_UIAUTOMATOR, 'new UiSelector().className("android.widget.Button").instance(1)')
+                        update_button.click()
+                    except WebDriverException:
+                        print("Кнопка обновления недоступна или не может быть нажата.") # Просто выводим сообщение, не прерываем тест
+        pytest.fail(f"Страница '{name}' не загрузилась после {max_attempts} попыток.")
+    def find_element_by_x(self, parent, text_part):#поиск элемента по координатам Х родительского элемента
+        parent_x = parent.location['x']
+        print(parent_x)
+        children = self.find_elements(AppiumBy.ANDROID_UIAUTOMATOR,f'new UiSelector().textContains("{text_part}")')
+        for child in children:
+            child_x = child.location['x']
+            print(child_x)
+            if abs(child_x - parent_x) <= 10:
+                return child
+        print(f'Не найден элемент с текстом "{text_part}"')
+        allure.attach(f"Попытка найти элемент с текстом: '{text_part}'", name="Детали поиска", attachment_type=allure.attachment_type.TEXT)
+        screenshot = self.driver.get_screenshot_as_png()
+        allure.attach(screenshot, name="Скриншот", attachment_type=allure.attachment_type.PNG)
+        raise NoSuchElementException(f'Элемент с текстом "{text_part}" не найден')
