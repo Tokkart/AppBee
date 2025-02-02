@@ -1,3 +1,0 @@
-price: 36.4
-price: 1
-price: 37.4

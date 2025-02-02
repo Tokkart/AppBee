@@ -1,2 +1,0 @@
-Ошибка: Элемент с локатором (-android uiautomator, new UiSelector().text("Что-то пошло не по плану")) не найден.
-Не найден элемент с текстом "('-android uiautomator', 'new UiSelector().text("Что-то пошло не по плану")')"

@@ -8,6 +8,18 @@ from test_app_android.project.pages.precheck_page import Precheck
 from test_app_android.project.pages.check_page import Check
 from test_app_android.project.pages.status_page import StatusPage
 from test_app_android.project.pages.tariff_list_page import List
+import shutil
+import os
+
+def pytest_configure(config):
+    """Очищает папку с результатами тестов allure-results."""
+    allure_results_dir = "allure-results"
+    allure_report_dir = "allure-report.html"
+
+    if os.path.exists(allure_results_dir):
+        shutil.rmtree(allure_results_dir)
+    if os.path.exists(allure_report_dir):
+        shutil.rmtree(allure_report_dir)
 
 @pytest.fixture(scope="function")
 def driver(request):

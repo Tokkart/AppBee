@@ -554,7 +554,7 @@ class BaseApp:
         first_parts = []
         #Если один из пакетов увеличивается
         increase_parts = []
-        if value_gb > value_gb_old or value_min > value_min_old:
+        if value_gb > value_gb_old or value_min > value_min_old and cycle == 'm':
             if value_gb > value_gb_old:
                 increase_parts.append(f'{value_gb} ГБ')
             if value_min > value_min_old:
@@ -563,7 +563,7 @@ class BaseApp:
             first_parts.append(increase_text)
         #Если один из пакетов уменьшается
         decrease_parts = []
-        if value_gb < value_gb_old or value_min < value_min_old:
+        if value_gb < value_gb_old or value_min < value_min_old and cycle == 'm':
             if value_gb < value_gb_old:
                 decrease_parts.append('ГБ')
             if value_min < value_min_old:
@@ -584,7 +584,7 @@ class BaseApp:
         else:
             next_text = ''
         #Текст про оплату
-        if value_gb != 0 or value_min != 0:
+        if value_gb != 0 or value_min != 0 and cycle == 'm':
             if value_gb != 0 and value_min == 0:
                 last_text = f'Стоимость тарифа составит {price} ₽/мес. Звонки будут оплачиваться поминутно.'
             elif value_gb == 0 and value_min != 0:
